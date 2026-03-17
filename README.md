@@ -1,213 +1,312 @@
-# Forestince – Nature Campus Admin
+# 🌲 Forestince – Nature Campus Admin
 
-A full-stack web app for managing facilities, users, bookings, and damage/maintenance reports. Built with Next.js, React, MongoDB, and Tailwind, with a focus on clear structure, maintainable UI, and realistic product flows.
+A full-stack web application for managing facilities, users, bookings, and operational reports (damage, maintenance), built with **Next.js, React, MongoDB, and Tailwind**.
 
----
+The project focuses on:
 
-## Overview
-
-**Forestince** is a facility management dashboard where:
-
-- **Admins** can:
-  - Manage **facilities** (create, edit, set active/inactive)
-  - Manage **users** (create, edit, assign role and company)
-  - View and manage **all bookings** (create, edit, update status: Pending → Confirmed / Cancelled / Completed)
-  - Track **reports** (damage/maintenance issues with status: Pending → Received → In progress → Resolved)
-
-- **Role-based visibility**: A simulated current user (via `CurrentUserContext`) drives what each role sees—e.g. staff see their own bookings, admins see their company’s, super admins see everything.
-
-- **Backend**: Next.js API routes (`/api/bookings`, `/api/facilities`, `/api/users`, `/api/reports`) with **MongoDB** for persistence. Data is real, not mocked.
+- clean UI implementation
+- maintainable architecture
+- realistic product flows
+- practical use of AI in development
 
 ---
 
-## UI Implementation
+## 🚀 Overview
 
-### 1. Component structure
+**Forestince** simulates a real-world **facility management system** where:
 
-- **Pages** (`/app/*`)
-  - Compose high-level clients/sections and handle routing only.
+### Admins can:
 
-- **Dashboard sections**
-  - `RequestsSection` – All Bookings (filters, table, create/edit modals)
-  - `FacilitiesSection` – Facilities (table, create/edit modals)
-  - `UsersSection` – Users (table, create/edit modals)
-  - `ReportsSection` – Reports (table, create/detail modals)
-  - `RecentBookingsTable` – Recent bookings on the home page
-  - `FacilityUsageCard`, `CampusMapCard`, `StatCard` – Dashboard widgets
+- Manage **facilities** (create, edit, activate/deactivate)
+- Manage **users** (roles, companies)
+- Manage **bookings** (status lifecycle: Pending → Confirmed / Cancelled / Completed)
+- Track **reports** (damage/issues lifecycle: Pending → Received → In progress → Resolved)
 
-- **Modals** (`/components/dashboard/modals/`)
-  - Extracted by area: `FacilityCreateModal`, `FacilityEditModal`, `UserCreateModal`, `UserEditModal`, `RequestCreateModal`, `RequestEditModal`. Section pages stay thin and pass props.
+### Users / Companies:
 
-- **Reusable UI**
+- Request facilities based on their needs
+
+### Role-based visibility:
+
+A simulated user (`CurrentUserContext`) controls what data is visible:
+
+- Staff → own bookings
+- Admin → company scope
+- Super Admin → global view
+
+---
+
+# 🎨 UI Implementation Approach
+
+## 1. Component Structure
+
+The UI is built with **clear separation of concerns**:
+
+- **Pages (`/app`)**
+  - Handle routing + orchestration only
+
+- **Sections (feature-level)**
+  - `RequestsSection`
+  - `FacilitiesSection`
+  - `UsersSection`
+  - `ReportsSection`
+
+- **Reusable components**
   - `FilterDropdown`, `DatePicker`, `TimeInput`, `FormField`
-  - Shared modal patterns (overlay, header, form, footer)
+  - Shared modal patterns (`ModalShell`, `ModalHeader`)
 
-Goal: avoid large “god components”; keep each unit focused.
+- **Modals extracted**
+  - Create/Edit modals are separated into dedicated components
+  - Keeps sections clean and readable
 
----
-
-### 2. Layout
-
-- **Sidebar** (fixed) – Nav: Dashboard, All Bookings, Facilities, Booking Rules, GeoJSON Layers, Users, Reports, Settings.
-- **Main content** – Table-based management plus filters and actions.
-- **Modals** for create, edit, and detail (no separate detail pages for list items).
-- **Design** – Soft surfaces (`bg-slate-50`, `bg-white`), consistent spacing, card grouping inside modals.
+👉 Avoids “god components” and keeps files maintainable.
 
 ---
 
-### 3. Responsive behavior
+## 2. Layout Decisions
 
-- Mobile: stacked filters, flexible grids.
-- Desktop: split layouts (main + sidebar/modals).
-- Tables scroll horizontally when needed.
+- Sidebar + main content layout (dashboard pattern)
+- Table-based UI for management clarity
+- Modal-based flows for:
+  - create
+  - edit
+  - detail view
 
----
+Design system:
 
-### 4. State
-
-State is **React local state** (and one context):
-
-- **CurrentUserContext** – Simulated current user (name, company, role) for role-based UI. No full auth (no login/logout).
-- **Local state** in sections: filters, pagination, modal open/closed, form drafts, selected row.
-
-No Redux/Zustand; scope kept minimal and FE-first.
+- soft surfaces (`bg-slate-50`, `bg-white`)
+- consistent spacing system
+- card grouping inside modals
 
 ---
 
-### 5. UI choices
+## 3. Responsive Behavior
 
-- Custom `FilterDropdown` instead of native `<select>` for consistent look.
-- Custom `DatePicker` and `TimeInput` for consistent behavior.
-- Modal workflows for create/edit for speed and clarity.
-- Status changes via dropdown (e.g. booking status, report status) instead of fixed Approve/Reject only.
+- Mobile:
+  - stacked filters
+  - flexible grids
+
+- Desktop:
+  - split layout (main + sidebar/modal)
+
+- Tables:
+  - horizontal scroll when needed
 
 ---
 
-## Architecture and data flow
+## 4. State Handling
 
-### 1. Project structure
+- Local React state for:
+  - filters
+  - pagination
+  - modals
+  - form drafts
+  - selection
+
+- One shared context:
+  - `CurrentUserContext` → simulate role-based UI
+
+👉 No Redux/Zustand → intentional decision to avoid over-engineering.
+
+---
+
+## 5. Practical UI Tradeoffs
+
+- Replaced native `<select>` → `FilterDropdown` (design consistency)
+- Built custom `DatePicker` (browser default inconsistent)
+- Used modal flows instead of navigation (faster UX)
+- Status editing uses dropdown (flexible lifecycle instead of rigid buttons)
+
+---
+
+# 🏗️ Architecture & Data Flow
+
+## 1. Project Structure
 
 ```
 src/
   app/
-    api/              # Next.js API routes (bookings, facilities, users, reports)
-    booking-rules/    # Booking rules & workflows help page
-    facilities/       # Facilities page
-    reports/          # Reports page
-    requests/         # All Bookings page
-    users/            # Users page
-    page.tsx          # Dashboard home
-    layout.tsx
+    api/
   components/
-    layout/           # AppShell, Sidebar, Topbar, UserControl, NotificationMenu
-    dashboard/        # Sections, StatCard, FacilityUsageCard, CampusMapCard, etc.
-    dashboard/modals/ # Create/Edit modals per area
-    UI/               # FormField, DatePicker, TimeInput
   features/
-    bookings/         # types, utils, repository, data
-    facilities/       # types, repository
-    reports/          # types, utils, repository
-    users/            # types, repository
   lib/
-    mongodb.ts        # MongoDB client and getDb()
-    cn.ts             # className helper
   contexts/
-    CurrentUserContext.tsx
 ```
 
 ---
 
-### 2. Separation of concerns
+## 2. Separation of Concerns
 
-- **UI components** – Rendering only; receive props and callbacks.
-- **Feature modules** – Types, utils, and **repositories** (MongoDB collection access). No UI.
-- **Sections** – Compose UI, hold local state, call APIs (e.g. `fetch('/api/bookings')`), and pass data/handlers to modals.
-
----
-
-### 3. Example flow: create booking
-
-1. User clicks “New booking” and the create modal opens.
-2. User fills facility, employee, company, date, time, attendees, purpose; optionally status.
-3. Client builds a `Booking` and calls `POST /api/bookings`.
-4. API uses `getBookingsCollection(db).insertOne(...)` and returns the created booking.
-5. Client updates local state; table re-renders.
-
-Same pattern for facilities, users, and reports: UI → API route → MongoDB → response → UI update.
+- **UI layer** → rendering only
+- **Feature layer** → types, utils, repositories
+- **API layer** → handles DB interaction
+- **Sections** → orchestrate state + API calls
 
 ---
 
-### 4. Data models (examples)
+## 3. Example Flow (End-to-End)
 
-**Booking**
+**Create Booking Flow:**
 
-- `id`, `facilityName`, `facilityType`, `employeeName`, `companyName`, `date`, `time`, `attendees`, `purpose`, `status` (`pending` | `confirmed` | `completed` | `cancelled`).
+1. User opens modal
+2. Inputs booking data
+3. UI builds `Booking` object
+4. Calls `POST /api/bookings`
+5. API writes to MongoDB
+6. UI updates state and re-renders
 
-**Report**
-
-- `id`, `date`, `facilityName`, `description`, `status` (`pending` | `received` | `in_progress` | `resolved`), optional `createdAt`.
-
-**Facility**
-
-- `id`, `name`, `type` (hut | bath | trail | deck | pod), `capacity`, `location`, `status` (active | inactive).
-
-**User (AppUser)**
-
-- `id`, `name`, `email`, `company`, `role`, `status` (active | inactive).
-
-Design: explicit status lifecycles, human-readable fields, easy to extend (e.g. attachments, priority).
+👉 Simulates real FE → BE → DB → UI loop
 
 ---
 
-## Booking rules page
+## 4. Data Modeling
 
-The **Booking Rules** page (`/booking-rules`) documents:
+Example:
 
-- Overall flow: Facilities → Users → Bookings → Reports.
-- How to create and edit facilities, users, bookings, and reports.
-- **Rules and why they exist**: facilities first, users/companies/roles, no double-booking, capacity limits, booking status flow, reports separate from bookings.
-- Short “Why?” callouts per area so behavior is clear.
+```ts
+type Report = {
+  id: string;
+  date: string;
+  facilityName: string;
+  description: string;
+  status: ReportStatus;
+  createdAt: string;
+};
+```
+
+Design decisions:
+
+- explicit status lifecycle
+- human-readable fields
+- easily extendable
 
 ---
 
-## Setup
+# ⚖️ Priorities & Tradeoffs
 
-### Prerequisites
+## Prioritized
+
+- Clean and scalable architecture
+- Consistent UI system
+- Realistic product flows
+- Maintainability over speed
+- Clear separation of concerns
+
+## Intentionally Left Out
+
+- Authentication system (simulated user instead)
+- Real-time updates (WebSocket)
+- Global state library
+- Advanced validation logic
+
+👉 Goal: focus on **core engineering thinking**, not system completeness
+
+---
+
+# 🤖 AI-Supported Workflow
+
+AI was actively used throughout development.
+
+## How AI was used
+
+- Generate initial UI scaffolding
+- Suggest component breakdown
+- Refactor large components into smaller units
+- Improve spacing, typography, and layout consistency
+- Suggest better UX flows (status lifecycle, modal structure)
+
+---
+
+## Where AI helped
+
+- Speeding up repetitive UI work
+- Providing alternative architectural approaches
+- Identifying refactor opportunities
+- Generating base implementations for components
+
+---
+
+## Where AI did NOT help
+
+- Raw UI output was often:
+  - visually unbalanced
+  - inconsistent spacing
+  - overly generic
+
+- Some suggestions:
+  - over-engineered
+  - introduced unnecessary abstraction
+
+---
+
+## How output was validated
+
+- Manual UI review (visual balance, spacing)
+- Refactoring AI-generated code
+- Enforcing consistency:
+  - naming
+  - spacing
+  - component boundaries
+
+- Ensuring no unnecessary dependencies
+  => No warning was found while building the project to deploy on production
+
+---
+
+## Key insight
+
+AI was used as a **co-pilot, not a decision-maker**.
+
+All final decisions were:
+
+- manually reviewed
+- aligned with product thinking
+
+---
+
+# 🛠️ Setup Instructions
+
+## Prerequisites
 
 - Node.js (v18+)
-- MongoDB (local or Atlas). The app expects a connection string in the environment.
+- MongoDB (local or Atlas)
 
-### Install and run
+---
+
+## Install & Run
 
 ```bash
-# Install dependencies
 npm install
-
-# Optional: set MongoDB connection string (required for API and seed)
-# Create .env.local in project root with:
-#   MONGODB_URI=mongodb+srv://...   (or mongodb://localhost:27017/...)
-
-# Run development server
 npm run dev
 ```
 
-Then open:
+Open:
 
 ```
 http://localhost:3000
 ```
 
-### Seed the database (optional)
+---
 
-To populate MongoDB with sample facilities, users, bookings, and reports:
+## Environment
+
+Create `.env.local`:
+
+```bash
+MONGODB_URI=your_connection_string
+```
+
+---
+
+## Seed database
 
 ```bash
 npm run seed
 ```
 
-The seed script connects to MongoDB using the URI defined in `scripts/seed.ts`. For production or a different database, change that URI or switch the script to use `process.env.MONGODB_URI` and set it in your environment.
+---
 
-### Build and start (production)
+## Production
 
 ```bash
 npm run build
@@ -216,43 +315,14 @@ npm start
 
 ---
 
-## Scripts
+# 🎯 What This Project Demonstrates
 
-| Command         | Description              |
-| --------------- | ------------------------ |
-| `npm run dev`   | Start Next.js dev server |
-| `npm run build` | Production build         |
-| `npm start`     | Start production server  |
-| `npm run seed`  | Seed MongoDB (see above) |
-| `npm run lint`  | Run ESLint               |
+- Realistic full-stack thinking
+- Clean UI architecture
+- Thoughtful component design
+- Practical use of AI in development
+- Strong focus on maintainability
 
 ---
 
-## What’s included vs intentionally limited
-
-### Included
-
-- **Backend**: Next.js API routes + MongoDB for bookings, facilities, users, reports.
-- **Simulated user/role**: `CurrentUserContext` for role-based visibility (no login UI).
-- Clear component/section/modals structure.
-- Consistent UI (Tailwind, spacing, modals).
-- Realistic flows: create/edit, status lifecycles, validation (e.g. capacity, double-booking).
-
-### Intentionally limited
-
-- **Full authentication**: No sign-in/sign-up; current user is simulated for demo/development.
-- **Real-time updates**: No WebSockets or live refresh.
-- **Global state library**: No Redux/Zustand; local state + one context.
-- **Advanced validation**: Basic required-field and business-rule checks only.
-
----
-
-## Final notes
-
-This project aims to show:
-
-- A realistic full-stack structure (Next.js + API + MongoDB).
-- Thoughtful UI and component boundaries.
-- How facilities, users, bookings, and reports fit together and how the Booking Rules page explains the “why” behind the rules.
-
-Thanks for reviewing.
+Thanks for reviewing 🙌
