@@ -13,8 +13,11 @@ function slugify(input: string): string {
 }
 
 async function main() {
-  const uri = "mongodb+srv://22520584:qQtKwGGgipWrwkVz@forum.78aewus.mongodb.net/?retryWrites=true&w=majority&appName=16h-test";
-  const client = new MongoClient(uri);
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI is not set");
+  }
+  const client = new MongoClient(uri as string);
   await client.connect();
 
   const db = client.db();
