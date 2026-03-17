@@ -5,6 +5,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { RecentBookingsTable } from "@/components/dashboard/RecentBookingsTable";
 import { FacilityUsageCard } from "@/components/dashboard/FacilityUsageCard";
 import { CampusMapCard } from "@/components/dashboard/CampusMapCard";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { useCurrentUser } from "@/contexts/CurrentUserContext";
 import type { Booking, FacilityUsage } from "@/features/bookings/booking.types";
 import type { Facility } from "@/features/facilities/facility.types";
@@ -15,6 +16,7 @@ export default function Page() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,6 +27,7 @@ export default function Page() {
           fetch("/api/facilities"),
           fetch("/api/users"),
         ]);
+        if (!isMounted) return;
         if (bookingsRes.ok) {
           const data = (await bookingsRes.json()) as Booking[];
           if (isMounted) setBookings(data);
@@ -39,6 +42,8 @@ export default function Page() {
         }
       } catch {
         // ignore; dashboard will show empty stats/table gracefully
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
     return () => {
@@ -118,6 +123,10 @@ export default function Page() {
       setBookings((prev) => [booking, ...prev]);
     }
   };
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div>

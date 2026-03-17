@@ -17,6 +17,7 @@ export function FacilitiesPageClient() {
   >("all");
   const [typeFilter, setTypeFilter] = useState<"all" | FacilityType>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -26,7 +27,11 @@ export function FacilitiesPageClient() {
           fetch("/api/facilities"),
           fetch("/api/bookings"),
         ]);
-        if (!facilitiesRes.ok) return;
+        if (!isMounted) return;
+        if (!facilitiesRes.ok) {
+          setIsLoading(false);
+          return;
+        }
         const data = (await facilitiesRes.json()) as Facility[];
         if (isMounted) setFacilities(data);
         if (bookingsRes.ok) {
@@ -35,6 +40,8 @@ export function FacilitiesPageClient() {
         }
       } catch {
         // swallow for now; UI already handles empty state gracefully
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
     return () => {
@@ -121,6 +128,7 @@ export function FacilitiesPageClient() {
   return (
     <div className="space-y-6">
       <FacilitiesSection
+        isLoading={isLoading}
         facilities={filtered}
         allFacilities={facilities}
         bookings={bookings}

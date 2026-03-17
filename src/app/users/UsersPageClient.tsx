@@ -14,19 +14,24 @@ export function UsersPageClient() {
   >("all");
   const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
         const res = await fetch("/api/users");
-        if (!res.ok) return;
-        const data = (await res.json()) as AppUser[];
-        if (isMounted) {
-          setUsers(data);
+        if (!isMounted) return;
+        if (!res.ok) {
+          setIsLoading(false);
+          return;
         }
+        const data = (await res.json()) as AppUser[];
+        if (isMounted) setUsers(data);
       } catch {
         // ignore; tables render empty state
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
     return () => {
@@ -114,6 +119,7 @@ export function UsersPageClient() {
   return (
     <div className="space-y-6">
       <UsersSection
+        isLoading={isLoading}
         users={filtered}
         allUsers={users}
         selectedUser={selected}

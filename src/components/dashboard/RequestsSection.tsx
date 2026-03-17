@@ -33,8 +33,10 @@ import { DatePicker } from "@/components/UI/DatePicker";
 import { FilterDropdown } from "./FilterDropdown";
 import { RequestCreateModal } from "./modals/RequestCreateModal";
 import { RequestEditModal } from "./modals/RequestEditModal";
+import { SectionTableSkeleton } from "./SectionTableSkeleton";
 
 export interface RequestsSectionProps {
+  isLoading?: boolean;
   allBookings: Booking[];
   facilityMeta: Facility[];
   searchQuery: string;
@@ -118,6 +120,7 @@ function getCapacityForType(type: FacilityType): number {
 }
 
 export function RequestsSection({
+  isLoading = false,
   allBookings,
   facilityMeta,
   searchQuery,
@@ -465,6 +468,17 @@ export function RequestsSection({
     onCreateBooking(newBooking);
     closeCreateModal();
   };
+
+  if (isLoading) {
+    return (
+      <SectionTableSkeleton
+        title="All Bookings"
+        rowCount={8}
+        columnCount={5}
+        showHeaderBar
+      />
+    );
+  }
 
   return (
     <>

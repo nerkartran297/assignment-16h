@@ -10,6 +10,7 @@ export function ReportsClient() {
   const { currentUser } = useCurrentUser();
   const [reports, setReports] = useState<Report[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -19,6 +20,7 @@ export function ReportsClient() {
           fetch("/api/reports"),
           fetch("/api/facilities"),
         ]);
+        if (!isMounted) return;
         if (reportsRes.ok) {
           const data = (await reportsRes.json()) as Report[];
           if (isMounted) setReports(data);
@@ -29,6 +31,8 @@ export function ReportsClient() {
         }
       } catch {
         // ignore
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
     return () => {
@@ -96,6 +100,7 @@ export function ReportsClient() {
   return (
     <div className="space-y-6">
       <ReportsSection
+        isLoading={isLoading}
         reports={reports}
         facilityNames={facilityNames}
         onCreateReport={handleCreateReport}

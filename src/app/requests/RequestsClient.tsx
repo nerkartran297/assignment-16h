@@ -48,6 +48,7 @@ export function RequestsClient({
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -57,7 +58,11 @@ export function RequestsClient({
           fetch("/api/bookings"),
           fetch("/api/facilities"),
         ]);
-        if (!bookingsRes.ok || !facilitiesRes.ok) return;
+        if (!isMounted) return;
+        if (!bookingsRes.ok || !facilitiesRes.ok) {
+          setIsLoading(false);
+          return;
+        }
         const [bookingsData, facilitiesData] = (await Promise.all([
           bookingsRes.json(),
           facilitiesRes.json(),
@@ -68,6 +73,8 @@ export function RequestsClient({
         }
       } catch {
         // ignore; UI handles empty list
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
     return () => {
@@ -226,6 +233,7 @@ export function RequestsClient({
   return (
     <div className="space-y-6">
       <RequestsSection
+        isLoading={isLoading}
         allBookings={bookings}
         searchQuery={query}
         onSearchQueryChange={setQuery}

@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { FilterDropdown } from "./FilterDropdown";
 import { UserCreateModal } from "./modals/UserCreateModal";
 import { UserEditModal } from "./modals/UserEditModal";
+import { SectionTableSkeleton } from "./SectionTableSkeleton";
 import {
   SearchIcon,
   Filter,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 
 export interface UsersSectionProps {
+  isLoading?: boolean;
   users: AppUser[];
   allUsers: AppUser[];
   selectedUser: AppUser | null;
@@ -102,6 +104,7 @@ function formatRoleLabel(role: UserRole) {
 }
 
 export function UsersSection({
+  isLoading = false,
   users,
   selectedUser,
   onSelectUser,
@@ -217,6 +220,17 @@ export function UsersSection({
 
     closeDetailModal();
   };
+
+  if (isLoading) {
+    return (
+      <SectionTableSkeleton
+        title="All Users"
+        rowCount={8}
+        columnCount={6}
+        showHeaderBar
+      />
+    );
+  }
 
   return (
     <>

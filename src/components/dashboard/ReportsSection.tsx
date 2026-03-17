@@ -23,8 +23,10 @@ import {
   Building2,
   Calendar,
 } from "lucide-react";
+import { SectionTableSkeleton } from "./SectionTableSkeleton";
 
 export interface ReportsSectionProps {
+  isLoading?: boolean;
   reports: Report[];
   facilityNames: string[];
   onCreateReport: (report: Report) => void;
@@ -153,6 +155,7 @@ const STATUS_OPTIONS: ReportStatus[] = [
 ];
 
 export function ReportsSection({
+  isLoading = false,
   reports,
   facilityNames,
   onCreateReport,
@@ -253,6 +256,17 @@ export function ReportsSection({
     onUpdateReport({ ...selectedReport, status: draftStatus });
     closeDetailModal();
   };
+
+  if (isLoading) {
+    return (
+      <SectionTableSkeleton
+        title="Damage / Issue Reports"
+        rowCount={8}
+        columnCount={5}
+        showHeaderBar
+      />
+    );
+  }
 
   return (
     <>

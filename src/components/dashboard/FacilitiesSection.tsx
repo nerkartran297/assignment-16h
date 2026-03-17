@@ -9,6 +9,7 @@ import { DatePicker } from "@/components/UI/DatePicker";
 import { FilterDropdown } from "./FilterDropdown";
 import { FacilityCreateModal } from "./modals/FacilityCreateModal";
 import { FacilityEditModal } from "./modals/FacilityEditModal";
+import { SectionTableSkeleton } from "./SectionTableSkeleton";
 import {
   Building2,
   Filter,
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 
 export interface FacilitiesSectionProps {
+  isLoading?: boolean;
   facilities: Facility[];
   allFacilities: Facility[];
   bookings?: Booking[];
@@ -120,6 +122,7 @@ function formatTypeLabel(type: Facility["type"]) {
 }
 
 export function FacilitiesSection({
+  isLoading = false,
   facilities,
   allFacilities,
   bookings = [],
@@ -255,6 +258,17 @@ export function FacilitiesSection({
 
     closeDetailModal();
   };
+
+  if (isLoading) {
+    return (
+      <SectionTableSkeleton
+        title="All Facilities"
+        rowCount={8}
+        columnCount={6}
+        showHeaderBar
+      />
+    );
+  }
 
   return (
     <>
