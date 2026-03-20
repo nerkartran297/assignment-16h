@@ -16,6 +16,8 @@ export default function Page() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -168,6 +170,10 @@ export default function Page() {
             onAddBooking={handleAddBooking}
             createBookingDefaults={createBookingDefaults}
             className="flex-1"
+            dateFrom={dateFrom}
+            onDateFromChange={setDateFrom}
+            dateTo={dateTo}
+            onDateToChange={setDateTo}
           />
         </div>
 

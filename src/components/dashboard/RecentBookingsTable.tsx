@@ -31,6 +31,7 @@ import Link from "next/link";
 import { FormField } from "../UI/FormField";
 import { TimeInput } from "../UI/TimeInput";
 import { FilterDropdown } from "./FilterDropdown";
+import { DatePicker } from "../UI/DatePicker";
 
 export interface RecentBookingsTableProps {
   bookings: Booking[];
@@ -41,6 +42,10 @@ export interface RecentBookingsTableProps {
     defaultStatus: BookingStatus;
   };
   className?: string;
+  dateFrom: string;
+  onDateFromChange: (next: string) => void;
+  dateTo: string;
+  onDateToChange: (next: string) => void;
 }
 
 function renderFacilityIcon(type: FacilityType | "all") {
@@ -101,6 +106,10 @@ export function RecentBookingsTable({
   onAddBooking,
   createBookingDefaults,
   className,
+  dateFrom,
+  onDateFromChange,
+  dateTo,
+  onDateToChange,
 }: RecentBookingsTableProps) {
   const pageSize = 6;
   const [page, setPage] = useState(1);
@@ -133,14 +142,38 @@ export function RecentBookingsTable({
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
-  const total = bookings.length;
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking) => {
+      const bookingDate = parseBookingDate(booking.date);
+      const fromDate = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null;
+      const toDate = dateTo ? new Date(`${dateTo}T23:59:59`) : null;
+      return (
+        !bookingDate ||
+        ((!fromDate || bookingDate >= fromDate) &&
+          (!toDate || bookingDate <= toDate))
+      );
+    });
+  }, [bookings, dateFrom, dateTo]);
+
+  const total = filteredBookings.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
 
   const paginatedBookings = useMemo(() => {
     const start = (safePage - 1) * pageSize;
-    return bookings.slice(start, start + pageSize);
-  }, [bookings, safePage]);
+    return filteredBookings.slice(start, start + pageSize);
+  }, [filteredBookings, safePage]);
+
+  const formatDateTime = (date: string, time: string) => {
+    const parsedDate = parseBookingDate(date);
+    if (!parsedDate) return `${date} - ${time}`;
+    const formattedDate = parsedDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+    return `${formattedDate} - ${time}`;
+  };
 
   const facilityTypeMap = useMemo(() => {
     const map = new Map<string, FacilityType>();
@@ -202,7 +235,7 @@ export function RecentBookingsTable({
 
   const effectiveCompanyForSave =
     draftCompanyName === "All" && draftEmployeeName.trim()
-      ? employeeToCompanyMap.get(draftEmployeeName.trim()) ?? ""
+      ? (employeeToCompanyMap.get(draftEmployeeName.trim()) ?? "")
       : draftCompanyName.trim();
   const canSave =
     draftFacilityName.trim().length > 0 &&
@@ -305,6 +338,27 @@ export function RecentBookingsTable({
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
+            <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center">
+              <DatePicker
+                value={dateFrom}
+                onChange={(next) => {
+                  setPage(1);
+                  onDateFromChange(next);
+                }}
+                placeholder="From date"
+                className="w-full md:w-[150px]"
+              />
+              <DatePicker
+                value={dateTo}
+                onChange={(next) => {
+                  setPage(1);
+                  onDateToChange(next);
+                }}
+                placeholder="To date"
+                className="w-full md:w-[150px]"
+                leftOffset={-110}
+              />
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -371,7 +425,7 @@ export function RecentBookingsTable({
                     {booking.employeeName}
                   </td>
                   <td className="w-[190px] lg:w-[180px] px-5 py-4 text-[#64748B] md:px-6 text-md whitespace-nowrap">
-                    {booking.date}, {booking.time}
+                    {formatDateTime(booking.date, booking.time)}
                   </td>
                   <td className="w-[140px] lg:w-[180px] px-5 py-4 md:px-6">
                     <span
